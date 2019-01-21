@@ -11,8 +11,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 
-
-int main(int argc,char* argv)
+int main()
 {
 
   return 0;

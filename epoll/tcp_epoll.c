@@ -14,6 +14,25 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 
+int recv_data(int sockfd, char buf, int len)
+{
+  int total_len = 0;
+  int read_len = 0;
+  while(1)
+  {
+    read_len = recv(sockfd, buf + total_len, len - total_len, 0);
+    if(read_len <= 0){
+      if(errno == EINTR || errno == EAGAIN)
+        continue;
+      return -1;
+    }
+    if(read_len < (len -total_len)){
+      break;
+    }
+    total_len += read_len;
+  }
+}
+
 int main(int argc, char* argv[])
 {
   if(argc != 3)
@@ -78,7 +97,8 @@ int main(int argc, char* argv[])
         printf("new connect\n");
         //接收新连接，给新连接定义事件，然后添加到epoll的监控集合中
         ev.events = EPOLLIN;//可读事件
-        ev.data.fd = lis_fd;
+        //EPOLLET代表边缘触发
+        ev.data.fd = lis_fd | EPOLLET;
         epoll_ctl(epfd, EPOLL_CTL_ADD, cli_fd, &ev);
       }
       //如果就绪的事件结点的描述符不是监听描述符
